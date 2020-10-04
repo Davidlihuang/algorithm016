@@ -93,33 +93,174 @@ void BFS(Node* root) {
 1. 目标函数单调性(单调递增或者单调递减) -- 有序
 2. 存在上下界(bounded)
 3. 能够通过索引访问(index accessible)
-#### 代码模板
+#### 算法注意细节
+二分查找在边界条件上比较容易出错，算法框架如下所示。
+循环结束条件：
+- $\leq$ : 搜索区间为闭区间 [left, right]其中right =  array.length -1;
+-- ①、搜索左边区间时：right = mid-1;
+-- ②、搜索右边区间时：left   = mid+1;
+- $<$: 搜索区间左闭右开：[left, right) 其中right = array.length
+-- ①、搜索左半区间：right = mid;
+-- ②、搜索右半区间：left   = mid +1;
+#### 算法框架
 ```cpp
 //迭代
-int BinarySearch(int array[], int len, int target) {
-	int left=0, right = len-1;
-	while(left<=right) {
-		int mid = (left+right)/2;
-		if (array[mid] == target) {
-            break or return result;
-		} else if(array[mid] < target) {
-			left = mid + 1;
-		} else {
-			right = mid -1;
-		}
-	}
-	return -1;
+int binarySearch(int[] nums, int target) {
+    int left = 0, right = ...;
+    while(...) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            ...
+        } else if (nums[mid] < target) {
+            left = ...
+        } else if (nums[mid] > target) {
+            right = ...
+        }
+    }
+    return ...;
+```
+#### 常用场景
+1. 寻找一个数
+```cpp
+//迭代
+int binarySearch(int[] nums, int target) {
+    int left = 0, right = len-1;
+    while(left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            return mid;
+        } else if (nums[mid] < target) {
+            left = mid+1;
+        } else if (nums[mid] > target) {
+            right = mid-1;
+        }
+    }
+    return -1;
+```
+2. 寻找左侧边界: 
+- 开区间[left, right）
+```cpp
+int binarySearch_LeftBound(int[] nums, int target) {
+    int left = 0, right = len;
+    while(left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            right = mid;
+        } else if (nums[mid] < target) {
+            left = mid+1;
+        } else if (nums[mid] > target) {
+            right = mid;
+        }
+    }
+    return left;
+```
+- 闭区间：[left, right] 应该检查越界情况
+```cpp
+//迭代
+int binarySearch_LeftBound(int[] nums, int target) {
+    int left = 0, right = len-1;   //闭区间
+    while(left <= right) {   //终止条件
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            right = mid-1;  //锁定左边界
+        } else if (nums[mid] < target) {
+            left = mid+1;
+        } else if (nums[mid] > target) {
+            right = mid-1;
+        }
+    }
+    //增加判定left越界条件
+    if(left >= len || nums[left] != target) return -1
+    return left;
 }
-//递归
-int BinarySearch_Recur(int array[], int left, int right, int target) {
-	if(left > right) return -1;
-	int mid = left + (right - left)/2;
-	if(array[mid] == target) 
-		return mid;
-	else if(array[mid] < target) 
-		return BinarySearch_Recur(array, mid+1, right, target);
-	else 
-		return BinarySearch_Recur(array, left, mid-1, target);
+```
+3. 寻找右侧边界
+- 开区间[left, right）：left = mid+1; right = mid；保证左闭右开
+```cpp
+int binarySearch_RightBound(int[] nums, int target) {
+    int left = 0, right = len;
+    while(left < right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            left = mid + 1;  //锁定右边界
+        } else if (nums[mid] < target) {
+            left = mid+1;   //左闭
+        } else if (nums[mid] > target) {
+            right = mid;    //右开
+        }
+    }
+    return left-1; //注意
+}
+```
+- 闭区间：[left, right] 应该检查越界情况
+```cpp
+int binarySearch_RightBound(int[] nums, int target) {
+    int left = 0, right = len-1;   //闭区间
+    while(left <= right) {   //终止条件
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            left = mid+1;
+        } else if (nums[mid] < target) {
+            left = mid+1;   //左闭
+        } else if (nums[mid] > target) {
+            right = mid-1;	//右闭
+        }
+    }
+    //增加判定越界条件
+    if(right < 0 || nums[right] != target) return -1；
+    return right;
+}
+```
+#### 使用闭区间的二分查找算法模板
+```cpp
+//查找一个数
+int binarySearch(int[] nums, int target) {
+    int left = 0, right = len-1;
+    while(left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            return mid;
+        } else if (nums[mid] < target) {
+            left = mid+1;
+        } else if (nums[mid] > target) {
+            right = mid-1;
+        }
+    }
+    return -1;
+}
+//查找左边界
+int binarySearch_LeftBound(int[] nums, int target) {
+    int left = 0, right = len-1;   //闭区间
+    while(left <= right) {   //终止条件
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            right = mid-1;  //锁定左边界
+        } else if (nums[mid] < target) {
+            left = mid+1;
+        } else if (nums[mid] > target) {
+            right = mid-1;
+        }
+    }
+    //增加判定left越界条件
+    if(left >= len || nums[left] != target) return -1
+    return left;
+}
+//查找右边界
+int binarySearch_RightBound(int[] nums, int target) {
+    int left = 0, right = len-1;   //闭区间
+    while(left <= right) {   //终止条件
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            left = mid+1;
+        } else if (nums[mid] < target) {
+            left = mid+1;   //左闭
+        } else if (nums[mid] > target) {
+            right = mid-1;	//右闭
+        }
+    }
+    //增加判定越界条件
+    if(right < 0 || nums[right] != target) return -1；
+    return right;
 }
 ```
 ## **leetcode刷题**
